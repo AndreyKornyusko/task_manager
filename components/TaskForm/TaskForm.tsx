@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -38,6 +38,19 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Update form data when task prop changes
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
+      } as TaskFormData)
+      setDueDateValue(task.dueDate ? dayjs(task.dueDate) : null)
+    }
+  }, [task])
 
   // Get user's timezone
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'

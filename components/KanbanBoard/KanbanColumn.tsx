@@ -16,6 +16,10 @@ interface KanbanColumnProps {
 function KanbanColumnComponent({ id, title, tasks }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
+    data: {
+      type: 'column',
+      status: id,
+    },
   })
 
   const taskIds = tasks.map((task) => task.id)
