@@ -216,12 +216,12 @@ export const dataStoreAPI = {
     }
   },
 
-  createTask: (task: Omit<Task, 'subtasks'>): Task => {
+  createTask: (task: Omit<Task, 'id' | 'createdAt' | 'subtasks'>): Task => {
     initializeStore()
     const newTask: Task = {
       ...task,
-      id: task.id || generateId(),
-      createdAt: task.createdAt || new Date().toISOString(),
+      id: generateId(),
+      createdAt: new Date().toISOString(),
       subtasks: [],
     }
     dataStore.tasks.push(newTask)
@@ -233,10 +233,18 @@ export const dataStoreAPI = {
     const index = dataStore.tasks.findIndex((t) => t.id === id)
     if (index === -1) return undefined
 
+    const existingTask = dataStore.tasks[index]
+    if (!existingTask) return undefined
+
     const updatedTask: Task = {
-      ...dataStore.tasks[index],
-      ...updates,
-      id, // Ensure ID doesn't change
+      id,
+      title: updates.title ?? existingTask.title,
+      description: updates.description ?? existingTask.description,
+      priority: updates.priority ?? existingTask.priority,
+      dueDate: updates.dueDate ?? existingTask.dueDate,
+      status: updates.status ?? existingTask.status,
+      completed: updates.completed ?? existingTask.completed,
+      createdAt: updates.createdAt ?? existingTask.createdAt,
       subtasks: dataStore.subtasks.filter((s) => s.taskId === id),
     }
     dataStore.tasks[index] = updatedTask
@@ -280,10 +288,14 @@ export const dataStoreAPI = {
     const index = dataStore.subtasks.findIndex((s) => s.id === id)
     if (index === -1) return undefined
 
+    const existingSubtask = dataStore.subtasks[index]
+    if (!existingSubtask) return undefined
+
     const updatedSubtask: Subtask = {
-      ...dataStore.subtasks[index],
-      ...updates,
-      id, // Ensure ID doesn't change
+      id,
+      title: updates.title ?? existingSubtask.title,
+      completed: updates.completed ?? existingSubtask.completed,
+      taskId: updates.taskId ?? existingSubtask.taskId,
     }
     dataStore.subtasks[index] = updatedSubtask
     return updatedSubtask

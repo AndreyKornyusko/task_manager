@@ -122,7 +122,20 @@ function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
         }
 
         const [moved] = source.splice(index, 1)
-        const updatedMoved: Task = { ...moved, status: toStatus, completed: toStatus === 'done' }
+        if (!moved) {
+          return prev
+        }
+        const updatedMoved: Task = {
+          id: moved.id,
+          title: moved.title,
+          description: moved.description,
+          priority: moved.priority,
+          dueDate: moved.dueDate,
+          status: toStatus,
+          completed: toStatus === 'done',
+          createdAt: moved.createdAt,
+          subtasks: moved.subtasks,
+        }
         const targetList = [...(prev[toStatus] ?? []), updatedMoved]
 
         return {
@@ -174,7 +187,20 @@ function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
       }
 
       const [moved] = source.splice(index, 1)
-      const updatedMoved: Task = { ...moved, status: toStatus, completed: toStatus === 'done' }
+      if (!moved) {
+        return prev
+      }
+      const updatedMoved: Task = {
+        id: moved.id,
+        title: moved.title,
+        description: moved.description,
+        priority: moved.priority,
+        dueDate: moved.dueDate,
+        status: toStatus,
+        completed: toStatus === 'done',
+        createdAt: moved.createdAt,
+        subtasks: moved.subtasks,
+      }
       const targetList = [...(prev[toStatus] ?? []), updatedMoved]
 
       return {

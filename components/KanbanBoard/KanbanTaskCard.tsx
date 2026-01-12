@@ -14,8 +14,7 @@ interface KanbanTaskCardProps {
 function KanbanTaskCardComponent({ task }: KanbanTaskCardProps) {
   const { toggleTaskCompletion, deleteTask } = useTasks()
 
-  const handleToggleComplete = async (e: React.MouseEvent) => {
-    e.preventDefault()
+  const handleToggleComplete = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
     await toggleTaskCompletion(task.id)
   }
@@ -47,7 +46,6 @@ function KanbanTaskCardComponent({ task }: KanbanTaskCardProps) {
             type="checkbox"
             checked={task.completed}
             onChange={handleToggleComplete}
-            onClick={handleToggleComplete}
             className={styles.checkbox}
             aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
           />
