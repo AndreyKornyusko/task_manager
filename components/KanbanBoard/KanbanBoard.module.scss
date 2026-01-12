@@ -1,0 +1,242 @@
+@import '@/styles/variables';
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  padding: 2rem 0;
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: calc(100vh - 200px);
+}
+
+.column {
+  background: linear-gradient(to bottom, $bg-secondary, $bg-primary);
+  border-radius: 1rem;
+  border: 2px solid $border-color;
+  padding: 1.5rem;
+  min-height: 600px;
+  max-height: calc(100vh - 250px);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: $shadow-md;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $accent-primary, $accent-hover);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    border-color: $accent-primary;
+    box-shadow: $shadow-lg;
+    transform: translateY(-2px);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+}
+
+.columnOver {
+  background: linear-gradient(to bottom, $bg-tertiary, $bg-secondary);
+  border-color: $accent-primary;
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2), $shadow-lg;
+  transform: scale(1.02);
+
+  &::before {
+    opacity: 1;
+  }
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid $border-color;
+  position: relative;
+}
+
+.columnTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $accent-primary;
+    display: inline-block;
+    box-shadow: 0 0 8px currentColor;
+  }
+}
+
+// Column-specific styling
+.columnTodo {
+  &::before {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+  }
+
+  .columnTitle::before {
+    background-color: #3b82f6;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+  }
+}
+
+.columnInProgress {
+  &::before {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .columnTitle::before {
+    background-color: #f59e0b;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  }
+}
+
+.columnDone {
+  &::before {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .columnTitle::before {
+    background-color: #10b981;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+  }
+}
+
+.columnCount {
+  padding: 0.5rem 0.875rem;
+  background: linear-gradient(135deg, $accent-primary, $accent-hover);
+  border-radius: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  min-width: 2rem;
+  text-align: center;
+  box-shadow: $shadow-sm;
+}
+
+.columnContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: $bg-tertiary transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $bg-tertiary;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: $text-tertiary;
+    }
+  }
+}
+
+.emptyColumn {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $text-tertiary;
+  font-size: 0.9375rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border: 2px dashed $border-color;
+  border-radius: 0.75rem;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+
+  &::before {
+    content: '📋';
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+  }
+}
+
+.dragOverlay {
+  opacity: 0.95;
+  transform: rotate(3deg) scale(1.05);
+  cursor: grabbing;
+  box-shadow: $shadow-lg;
+  filter: brightness(1.1);
+}
+
+.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+// Desktop-specific enhancements
+@media (min-width: 1025px) {
+  .board {
+    padding: 2.5rem 1rem;
+  }
+
+  .column {
+    min-height: 650px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .board {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .column {
+    min-height: 300px;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .board {
+    gap: 1rem;
+  }
+
+  .column {
+    padding: 0.75rem;
+    min-height: 250px;
+  }
+
+  .columnTitle {
+    font-size: 1rem;
+  }
+}
+

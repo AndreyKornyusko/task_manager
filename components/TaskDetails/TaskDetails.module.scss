@@ -1,0 +1,222 @@
+@import '@/styles/variables';
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: $bg-secondary;
+  border-radius: 0.75rem;
+  box-shadow: $shadow-md;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid $border-color;
+}
+
+.checkboxContainer {
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+
+.checkbox {
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+  accent-color: $accent-primary;
+}
+
+.title {
+  flex: 1;
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0;
+  word-break: break-word;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.editButton,
+.deleteButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.editButton {
+  background-color: $accent-primary;
+  color: white;
+
+  &:hover {
+    background-color: $accent-hover;
+  }
+}
+
+.deleteButton {
+  background-color: $error;
+  color: white;
+
+  &:hover {
+    background-color: #dc2626;
+  }
+}
+
+.content {
+  margin-bottom: 2rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 0.75rem;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: $text-secondary;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: $bg-primary;
+  border-radius: 0.5rem;
+  border: 1px solid $border-color;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metaLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-tertiary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.priority,
+.status,
+.dueDate,
+.createdDate {
+  font-size: 1rem;
+  color: $text-primary;
+}
+
+.priority {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.priorityLow {
+  background-color: $priority-low;
+  color: white;
+}
+
+.priorityMedium {
+  background-color: $priority-medium;
+  color: white;
+}
+
+.priorityHigh {
+  background-color: $priority-high;
+  color: white;
+}
+
+.status {
+  text-transform: capitalize;
+  padding: 0.375rem 0.75rem;
+  background-color: $bg-tertiary;
+  border-radius: 0.375rem;
+  width: fit-content;
+}
+
+.dueDate {
+  font-weight: 500;
+}
+
+.duePast {
+  color: $error;
+  font-weight: 600;
+}
+
+.dueToday {
+  color: $warning;
+  font-weight: 600;
+}
+
+.footer {
+  padding-top: 1.5rem;
+  border-top: 1px solid $border-color;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $accent-primary;
+  font-weight: 500;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $accent-hover;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .editButton,
+  .deleteButton {
+    flex: 1;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+  }
+}
+

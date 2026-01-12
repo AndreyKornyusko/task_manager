@@ -1,0 +1,174 @@
+@import '@/styles/variables';
+
+.container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: $bg-primary;
+  border-radius: 0.5rem;
+  border: 1px solid $border-color;
+}
+
+.header {
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 0.75rem;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progressText {
+  font-size: 0.875rem;
+  color: $text-secondary;
+}
+
+.progressBar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: $bg-tertiary;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: $success;
+  transition: width 0.3s ease;
+}
+
+.addForm {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.addInput {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid $border-color;
+  border-radius: 0.5rem;
+  background-color: $bg-secondary;
+  color: $text-primary;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: $accent-primary;
+    box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+  }
+}
+
+.addButton {
+  padding: 0.75rem 1.5rem;
+  background-color: $accent-primary;
+  color: white;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: $accent-hover;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background-color: $bg-secondary;
+  border-radius: 0.5rem;
+  border: 1px solid $border-color;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $bg-tertiary;
+  }
+}
+
+.subtaskContent {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.checkbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+  accent-color: $accent-primary;
+  flex-shrink: 0;
+}
+
+.subtaskTitle {
+  font-size: 0.875rem;
+  color: $text-primary;
+  word-break: break-word;
+  transition: all 0.2s ease;
+
+  &.completed {
+    text-decoration: line-through;
+    color: $text-tertiary;
+  }
+}
+
+.deleteButton {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+
+  &:hover {
+    background-color: $error;
+    color: white;
+  }
+}
+
+.empty {
+  text-align: center;
+  color: $text-tertiary;
+  font-size: 0.875rem;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .addForm {
+    flex-direction: column;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+}
+

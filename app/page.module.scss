@@ -1,0 +1,116 @@
+@import '@/styles/variables';
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid $border-color;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.createButton {
+  padding: 0.75rem 1.5rem;
+  background-color: $accent-primary;
+  color: white;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-block;
+
+  &:hover {
+    background-color: $accent-hover;
+    transform: translateY(-1px);
+  }
+}
+
+.viewToggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  background-color: $bg-secondary;
+  border-radius: 0.5rem;
+  border: 1px solid $border-color;
+  width: fit-content;
+}
+
+.viewButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: transparent;
+  color: $text-secondary;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: $text-primary;
+    background-color: $bg-tertiary;
+  }
+
+  &.active {
+    background-color: $accent-primary;
+    color: white;
+  }
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.125rem;
+}
+
+.error {
+  color: $error;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .viewToggle {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
