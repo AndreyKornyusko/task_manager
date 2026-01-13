@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   DndContext,
   DragEndEvent,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
@@ -26,19 +27,54 @@ type ActiveDrag = {
   task: Task
 }
 
+// Helper to check if columns structure changed
+function columnsEqual(
+  a: Record<TaskStatus, Task[]>,
+  b: Record<TaskStatus, Task[]>
+): boolean {
+  const statuses: TaskStatus[] = ['todo', 'in-progress', 'done']
+  for (const status of statuses) {
+    const aTasks = a[status] ?? []
+    const bTasks = b[status] ?? []
+    if (aTasks.length !== bTasks.length) return false
+    for (let i = 0; i < aTasks.length; i++) {
+      if (aTasks[i]?.id !== bTasks[i]?.id || aTasks[i]?.status !== bTasks[i]?.status) {
+        return false
+      }
+    }
+  }
+  return true
+}
+
 function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
   const { updateTask } = useTasks()
-  const [localColumns, setLocalColumns] = useState<Record<TaskStatus, Task[]>>({
-    todo: [],
-    'in-progress': [],
-    done: [],
+  const [localColumns, setLocalColumns] = useState<Record<TaskStatus, Task[]>>(() => {
+    const initialColumns: Record<TaskStatus, Task[]> = {
+      todo: [],
+      'in-progress': [],
+      done: [],
+    }
+    tasks.forEach((task) => {
+      const status = task.status as TaskStatus
+      if (initialColumns[status]) {
+        initialColumns[status].push(task)
+      }
+    })
+    return initialColumns
   })
   const [activeDrag, setActiveDrag] = useState<ActiveDrag | null>(null)
+  const prevTasksRef = useRef<Task[]>(tasks)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 6,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 5,
       },
     })
   )
@@ -49,45 +85,67 @@ function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
     { id: 'done', title: 'Done' },
   ]
 
-  // Sync local columns with tasks prop
-  // Only sync when tasks change from server, not during optimistic updates
-  useEffect(() => {
-    // Don't sync during active drag
-    if (activeDrag) {
-      return
-    }
-
+  // Compute columns from tasks
+  const computeColumns = (taskList: Task[]): Record<TaskStatus, Task[]> => {
     const newColumns: Record<TaskStatus, Task[]> = {
       todo: [],
       'in-progress': [],
       done: [],
     }
 
-    tasks.forEach((task) => {
+    taskList.forEach((task) => {
       const status = task.status as TaskStatus
       if (newColumns[status]) {
         newColumns[status].push(task)
       }
     })
 
-    // Only update if the structure actually changed
-    setLocalColumns((prev) => {
-      // Check if the new columns are different from current
-      const hasChanged = Object.keys(newColumns).some((status) => {
-        const prevTasks = prev[status as TaskStatus] ?? []
-        const newTasks = newColumns[status as TaskStatus] ?? []
-        if (prevTasks.length !== newTasks.length) return true
-        return prevTasks.some((prevTask, idx) => {
-          const newTask = newTasks[idx]
-          return !newTask || prevTask.id !== newTask.id || prevTask.status !== newTask.status
-        })
+    return newColumns
+  }
+
+  // Sync from parent only when content truly changed (avoid wiping optimistic UI)
+  useEffect(() => {
+    // Don't sync during active drag
+    if (activeDrag) {
+      return
+    }
+
+    // Check if tasks actually changed by comparing with previous ref
+    const prevTasks = prevTasksRef.current
+    if (!prevTasks || prevTasks.length === 0) {
+      // Initial sync
+      const computedColumns = computeColumns(tasks)
+      setLocalColumns(computedColumns)
+      prevTasksRef.current = [...tasks]
+      return
+    }
+
+    const tasksChanged =
+      prevTasks.length !== tasks.length ||
+      prevTasks.some((prevTask, idx) => {
+        const currentTask = tasks[idx]
+        return (
+          !currentTask ||
+          prevTask.id !== currentTask.id ||
+          prevTask.status !== currentTask.status
+        )
       })
 
-      return hasChanged ? newColumns : prev
-    })
+    if (tasksChanged) {
+      const computedColumns = computeColumns(tasks)
+      // Only update if structure actually changed
+      setLocalColumns((prev) => {
+        if (columnsEqual(prev, computedColumns)) {
+          return prev
+        }
+        return computedColumns
+      })
+      // Update ref with new tasks array
+      prevTasksRef.current = [...tasks]
+    }
   }, [tasks, activeDrag])
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     setActiveDrag(null)
 
@@ -96,87 +154,52 @@ function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
     }
 
     const activeData = active.data.current as { type: 'card'; task: Task } | undefined
-    const overData = over.data.current as { type: 'column'; status: TaskStatus } | undefined
+    const overData = over.data.current as
+      | { type: 'column'; status: TaskStatus }
+      | { type: 'card'; task: Task }
+      | undefined
 
-    // Also check if over.id is a column status (fallback for when data.current is not set)
-    const targetStatus = overData?.status || (over.id as TaskStatus)
-    
+    // Get the task being dragged
     if (!activeData || activeData.type !== 'card') {
-      // Try to find task by id if data.current is not set
-      const task = tasks.find((t) => t.id === active.id)
-      if (!task) return
-      
-      if (task.status === targetStatus) {
-        return
-      }
-
-      // Optimistic update
-      const fromStatus = task.status
-      const toStatus = targetStatus
-
-      setLocalColumns((prev) => {
-        const source = [...(prev[fromStatus] ?? [])]
-        const index = source.findIndex((item) => item.id === task.id)
-        if (index === -1) {
-          return prev
-        }
-
-        const [moved] = source.splice(index, 1)
-        if (!moved) {
-          return prev
-        }
-        const updatedMoved: Task = {
-          id: moved.id,
-          title: moved.title,
-          description: moved.description,
-          priority: moved.priority,
-          dueDate: moved.dueDate,
-          status: toStatus,
-          completed: toStatus === 'done',
-          createdAt: moved.createdAt,
-          subtasks: moved.subtasks,
-        }
-        const targetList = [...(prev[toStatus] ?? []), updatedMoved]
-
-        return {
-          ...prev,
-          [fromStatus]: source,
-          [toStatus]: targetList,
-        }
-      })
-
-      try {
-        await updateTask(task.id, {
-          status: toStatus,
-          completed: toStatus === 'done',
-        })
-      } catch (error) {
-        // Rollback to server state on error
-        const newColumns: Record<TaskStatus, Task[]> = {
-          todo: [],
-          'in-progress': [],
-          done: [],
-        }
-        tasks.forEach((task) => {
-          const status = task.status as TaskStatus
-          if (newColumns[status]) {
-            newColumns[status].push(task)
-          }
-        })
-        setLocalColumns(newColumns)
-        console.error('Failed to update task:', error)
-      }
       return
     }
 
     const { task } = activeData
 
-    if (task.status === targetStatus) {
+    // Determine target status - prioritize column data, then check over.id
+    let targetStatus: TaskStatus | undefined
+    const columnIds: TaskStatus[] = ['todo', 'in-progress', 'done']
+
+    // First, check if dropped on column (via data.current)
+    if (overData?.type === 'column') {
+      targetStatus = overData.status
+    }
+    // Second, check if over.id is a column status (fallback for when data.current is not set)
+    else if (columnIds.includes(over.id as TaskStatus)) {
+      targetStatus = over.id as TaskStatus
+    }
+    // Third, check if dropped on another card - use that card's status
+    else if (overData?.type === 'card') {
+      targetStatus = overData.task.status as TaskStatus
+    }
+    // Last resort: try to find the task in localColumns to get its column
+    else {
+      for (const status of columnIds) {
+        const found = localColumns[status]?.find((t) => t.id === over.id)
+        if (found) {
+          targetStatus = found.status as TaskStatus
+          break
+        }
+      }
+    }
+
+    // If still no target or same status, return early
+    if (!targetStatus || task.status === targetStatus) {
       return
     }
 
     // Optimistic local move between columns
-    const fromStatus = task.status
+    const fromStatus = task.status as TaskStatus
     const toStatus = targetStatus
 
     setLocalColumns((prev) => {
@@ -190,17 +213,7 @@ function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
       if (!moved) {
         return prev
       }
-      const updatedMoved: Task = {
-        id: moved.id,
-        title: moved.title,
-        description: moved.description,
-        priority: moved.priority,
-        dueDate: moved.dueDate,
-        status: toStatus,
-        completed: toStatus === 'done',
-        createdAt: moved.createdAt,
-        subtasks: moved.subtasks,
-      }
+      const updatedMoved: Task = { ...moved, status: toStatus, completed: toStatus === 'done' }
       const targetList = [...(prev[toStatus] ?? []), updatedMoved]
 
       return {
@@ -210,27 +223,17 @@ function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
       }
     })
 
-    try {
-      await updateTask(task.id, {
-        status: toStatus,
-        completed: toStatus === 'done',
-      })
-    } catch (error) {
+    // Update task on server (fire and forget, like in the working example)
+    updateTask(task.id, {
+      status: toStatus,
+      completed: toStatus === 'done',
+    }).catch(() => {
       // Rollback to server state on error
-      const newColumns: Record<TaskStatus, Task[]> = {
-        todo: [],
-        'in-progress': [],
-        done: [],
-      }
-      tasks.forEach((task) => {
-        const status = task.status as TaskStatus
-        if (newColumns[status]) {
-          newColumns[status].push(task)
-        }
+      setLocalColumns((prev) => {
+        const rollbackColumns = computeColumns(tasks)
+        return rollbackColumns
       })
-      setLocalColumns(newColumns)
-      console.error('Failed to update task:', error)
-    }
+    })
   }
 
   return (
@@ -241,12 +244,6 @@ function KanbanBoardComponent({ tasks }: KanbanBoardProps) {
         const data = event.active.data.current as { type: 'card'; task: Task } | undefined
         if (data?.type === 'card') {
           setActiveDrag({ id: event.active.id.toString(), task: data.task })
-        } else {
-          // Fallback: find task by id
-          const task = tasks.find((t) => t.id === event.active.id)
-          if (task) {
-            setActiveDrag({ id: event.active.id.toString(), task })
-          }
         }
       }}
       onDragEnd={handleDragEnd}

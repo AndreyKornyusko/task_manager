@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { dataStoreAPI } from '@/lib/data'
+import { subtaskRepository } from '@/mongodb/repositories/subtaskRepository'
 import type { Subtask } from '@/types/task'
 
 export async function GET(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const subtasks = dataStoreAPI.getSubtasksByTaskId(taskId)
+    const subtasks = await subtaskRepository.getSubtasksByTaskId(taskId)
     return NextResponse.json(subtasks)
   } catch (error) {
     return NextResponse.json(
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       taskId: body.taskId,
     }
 
-    const subtask = dataStoreAPI.createSubtask(newSubtask)
+    const subtask = await subtaskRepository.createSubtask(newSubtask)
     return NextResponse.json(subtask, { status: 201 })
   } catch (error) {
     return NextResponse.json(

@@ -22,6 +22,36 @@
   }
 }
 
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputWrapperError {
+  .input,
+  .textarea,
+  .select {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+    background-color: rgba(239, 68, 68, 0.05) !important;
+  }
+
+  .input:focus,
+  .textarea:focus,
+  .select:focus {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    background-color: rgba(239, 68, 68, 0.08) !important;
+  }
+
+  .input:hover,
+  .textarea:hover,
+  .select:hover {
+    border-color: #ef4444 !important;
+  }
+}
+
 .label {
   display: block;
   font-size: 0.875rem;
@@ -55,14 +85,6 @@
   box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
 }
 
-.inputError {
-  border-color: $error;
-
-  &:focus {
-    border-color: $error;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-  }
-}
 
 .textarea {
   resize: vertical;
@@ -75,9 +97,22 @@
 
 .error {
   display: block;
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-  color: $error;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ef4444;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .row {

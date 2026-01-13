@@ -1,15 +1,14 @@
-/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server'
-import { dataStoreAPI } from '@/lib/data'
+import { taskRepository } from '@/mongodb/repositories/taskRepository'
 import type { Task, TaskFormData } from '@/types/task'
 
 export async function GET() {
   try {
-    const tasks = dataStoreAPI.getAllTasks()
+    const tasks = await taskRepository.getAllTasks()
     return NextResponse.json(tasks)
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to fetch tasks' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch tasks' },
       { status: 500 }
     )
   }
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
       completed: false,
     }
 
-    const task = dataStoreAPI.createTask(newTask)
+    const task = await taskRepository.createTask(newTask)
     return NextResponse.json(task, { status: 201 })
   } catch (error) {
     return NextResponse.json(

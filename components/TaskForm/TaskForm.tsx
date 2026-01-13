@@ -38,6 +38,7 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
 
   // Update form data when task prop changes
   useEffect(() => {
@@ -81,6 +82,14 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
         return newErrors
       })
     }
+    // Re-validate on change if form was already attempted to submit
+    if (attemptedSubmit) {
+      const validationErrors = validateTaskForm({ ...formData, [name]: value })
+      const fieldError = validationErrors[name as keyof typeof validationErrors]
+      if (fieldError) {
+        setErrors((prev) => ({ ...prev, [name]: fieldError }))
+      }
+    }
   }
 
   const handleDateChange = (newValue: Dayjs | null) => {
@@ -97,18 +106,78 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
           return newErrors
         })
       }
+      // Re-validate on change if form was already attempted to submit
+      if (attemptedSubmit) {
+        const dateStr = newValue.tz(userTimezone).format('YYYY-MM-DD')
+        const validationErrors = validateTaskForm({ ...formData, dueDate: dateStr })
+        if (validationErrors.dueDate) {
+          setErrors((prev) => ({ ...prev, dueDate: validationErrors.dueDate as string }))
+        }
+      }
     } else {
       setFormData((prev) => ({ ...prev, dueDate: '' }))
+      // Re-validate on clear if form was already attempted to submit
+      if (attemptedSubmit) {
+        const validationErrors = validateTaskForm({ ...formData, dueDate: '' })
+        if (validationErrors.dueDate) {
+          setErrors((prev) => ({ ...prev, dueDate: validationErrors.dueDate as string }))
+        }
+      }
     }
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setErrors({})
-
-    const validationErrors = validateTaskForm(formData)
-    if (hasValidationErrors(validationErrors)) {
-      setErrors(validationErrors as Record<string, string>)
+    
+    // Get current form values directly from state
+    const currentTitle = String(formData.title || '').trim()
+    const currentDescription = String(formData.description || '').trim()
+    const currentPriority = (formData.priority || '') as Priority
+    const currentDueDate = String(formData.dueDate || '')
+    
+    // Validate all fields
+    const dataToValidate: TaskFormData = {
+      title: currentTitle,
+      description: currentDescription,
+      priority: currentPriority,
+      dueDate: currentDueDate,
+    }
+    
+    // Run validation
+    const validationErrors = validateTaskForm(dataToValidate)
+    
+    // Build error record
+    const errorRecord: Record<string, string> = {}
+    if (validationErrors.title) {
+      errorRecord.title = validationErrors.title
+    }
+    if (validationErrors.description) {
+      errorRecord.description = validationErrors.description
+    }
+    if (validationErrors.priority) {
+      errorRecord.priority = validationErrors.priority
+    }
+    if (validationErrors.dueDate) {
+      errorRecord.dueDate = validationErrors.dueDate
+    }
+    
+    // Set errors state FIRST to trigger re-render
+    setErrors(errorRecord)
+    setAttemptedSubmit(true)
+    
+    // If there are validation errors, stop here
+    if (Object.keys(errorRecord).length > 0) {
+      // Scroll to first error field after state update
+      setTimeout(() => {
+        const firstErrorField = Object.keys(errorRecord)[0]
+        if (firstErrorField) {
+          const element = document.getElementById(firstErrorField)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            element.focus()
+          }
+        }
+      }, 100)
       return
     }
 
@@ -124,6 +193,8 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
       } else {
         router.push('/')
       }
+      // Reset attempted submit on success
+      setAttemptedSubmit(false)
     } catch (error) {
       setErrors({
         submit: error instanceof Error ? error.message : 'Failed to save task',
@@ -141,17 +212,19 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
         <label htmlFor="title" className={styles.label}>
           Title <span className={styles.required}>*</span>
         </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
-          placeholder="Enter task title"
-          aria-invalid={!!errors.title}
-          aria-describedby={errors.title ? 'title-error' : undefined}
-        />
+        <div className={errors.title ? `${styles.inputWrapper} ${styles.inputWrapperError}` : styles.inputWrapper}>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className={styles.input}
+            placeholder="Enter task title"
+            aria-invalid={!!errors.title}
+            aria-describedby={errors.title ? 'title-error' : undefined}
+          />
+        </div>
         {errors.title && (
           <span id="title-error" className={styles.error} role="alert">
             {errors.title}
@@ -163,17 +236,19 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
         <label htmlFor="description" className={styles.label}>
           Description <span className={styles.required}>*</span>
         </label>
-        <textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
-          placeholder="Enter task description"
-          rows={4}
-          aria-invalid={!!errors.description}
-          aria-describedby={errors.description ? 'description-error' : undefined}
-        />
+        <div className={errors.description ? `${styles.inputWrapper} ${styles.inputWrapperError}` : styles.inputWrapper}>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className={styles.textarea}
+            placeholder="Enter task description"
+            rows={4}
+            aria-invalid={!!errors.description}
+            aria-describedby={errors.description ? 'description-error' : undefined}
+          />
+        </div>
         {errors.description && (
           <span id="description-error" className={styles.error} role="alert">
             {errors.description}
@@ -186,19 +261,21 @@ export function TaskForm({ task, onSuccess }: TaskFormProps) {
           <label htmlFor="priority" className={styles.label}>
             Priority <span className={styles.required}>*</span>
           </label>
-          <select
-            id="priority"
-            name="priority"
-            value={formData.priority}
-            onChange={handleChange}
-            className={`${styles.select} ${errors.priority ? styles.inputError : ''}`}
-            aria-invalid={!!errors.priority}
-            aria-describedby={errors.priority ? 'priority-error' : undefined}
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
+          <div className={errors.priority ? `${styles.inputWrapper} ${styles.inputWrapperError}` : styles.inputWrapper}>
+            <select
+              id="priority"
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              className={styles.select}
+              aria-invalid={!!errors.priority}
+              aria-describedby={errors.priority ? 'priority-error' : undefined}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
           {errors.priority && (
             <span id="priority-error" className={styles.error} role="alert">
               {errors.priority}

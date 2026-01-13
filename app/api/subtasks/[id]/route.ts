@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { dataStoreAPI } from '@/lib/data'
+import { subtaskRepository } from '@/mongodb/repositories/subtaskRepository'
 import type { Subtask } from '@/types/task'
 
 export async function PUT(
@@ -8,7 +8,7 @@ export async function PUT(
 ) {
   try {
     const updates: Partial<Subtask> = await request.json()
-    const subtask = dataStoreAPI.updateSubtask(params.id, updates)
+    const subtask = await subtaskRepository.updateSubtask(params.id, updates)
     if (!subtask) {
       return NextResponse.json({ error: 'Subtask not found' }, { status: 404 })
     }
@@ -26,7 +26,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const deleted = dataStoreAPI.deleteSubtask(params.id)
+    const deleted = await subtaskRepository.deleteSubtask(params.id)
     if (!deleted) {
       return NextResponse.json({ error: 'Subtask not found' }, { status: 404 })
     }

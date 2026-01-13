@@ -23,7 +23,7 @@ export function SubtaskList({ task }: SubtaskListProps) {
       await createSubtask(task.id, newSubtaskTitle.trim())
       setNewSubtaskTitle('')
     } catch (error) {
-      console.error('Failed to create subtask:', error)
+      // Error handled by context
     } finally {
       setIsAdding(false)
     }

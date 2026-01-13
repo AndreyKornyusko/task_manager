@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { dataStoreAPI } from '@/lib/data'
+import { taskRepository } from '@/mongodb/repositories/taskRepository'
 import type { Task } from '@/types/task'
 
 export async function GET(
@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const task = dataStoreAPI.getTaskById(params.id)
+    const task = await taskRepository.getTaskById(params.id)
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
@@ -26,7 +26,7 @@ export async function PUT(
 ) {
   try {
     const updates: Partial<Task> = await request.json()
-    const task = dataStoreAPI.updateTask(params.id, updates)
+    const task = await taskRepository.updateTask(params.id, updates)
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
@@ -44,7 +44,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const deleted = dataStoreAPI.deleteTask(params.id)
+    const deleted = await taskRepository.deleteTask(params.id)
     if (!deleted) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
