@@ -5,6 +5,19 @@ interface DataStore {
   subtasks: Subtask[]
 }
 
+interface DataStoreAPI {
+  getAllTasks: () => Task[]
+  getTaskById: (id: string) => Task | undefined
+  createTask: (task: Omit<Task, 'id' | 'createdAt' | 'subtasks'>) => Task
+  updateTask: (id: string, updates: Partial<Task>) => Task | undefined
+  deleteTask: (id: string) => boolean
+  getSubtasksByTaskId: (taskId: string) => Subtask[]
+  getSubtaskById: (id: string) => Subtask | undefined
+  createSubtask: (subtask: Omit<Subtask, 'id'>) => Subtask
+  updateSubtask: (id: string, updates: Partial<Subtask>) => Subtask | undefined
+  deleteSubtask: (id: string) => boolean
+}
+
 // Initial data from db.json
 const initialData: DataStore = {
   tasks: [
@@ -196,7 +209,7 @@ function initializeStore() {
 // Initialize on module load
 initializeStore()
 
-export const dataStoreAPI = {
+export const dataStoreAPI: DataStoreAPI = {
   // Tasks
   getAllTasks: (): Task[] => {
     initializeStore()
