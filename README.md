@@ -30,52 +30,6 @@ A comprehensive task management web application built with Next.js 14+, React, a
 - **TypeScript**: Full type safety throughout the application
 - **CSS Modules**: Component-scoped styling
 
-## Project Structure
-
-```
-task_manager/
-├── app/                          # Next.js App Router
-│   ├── layout.tsx               # Root layout with providers
-│   ├── page.tsx                 # Home page (task list/Kanban)
-│   ├── create/                  # Create task page
-│   │   └── page.tsx
-│   └── task/[id]/               # Task details page
-│       └── page.tsx
-├── components/                   # React components
-│   ├── TaskCard/                # Individual task card
-│   ├── TaskList/                # Task list component
-│   ├── TaskForm/                # Task creation/editing form
-│   ├── TaskDetails/             # Task details view
-│   ├── SubtaskList/             # Subtasks management
-│   ├── KanbanBoard/             # Kanban board with drag-and-drop
-│   ├── FilterBar/               # Filtering controls
-│   ├── SortBar/                 # Sorting controls
-│   ├── Pagination/              # Pagination component
-│   └── ThemeToggle/             # Dark/light theme switcher
-├── context/                      # Context providers
-│   ├── TaskContext.tsx          # Task state management
-│   └── ThemeContext.tsx         # Theme state management
-├── hooks/                        # Custom React hooks
-│   ├── useFilterAndSort.ts      # Filtering and sorting logic
-│   └── usePagination.ts         # Pagination logic
-├── app/
-│   └── api/                      # Next.js API routes
-│       ├── tasks/                # Task API endpoints
-│       └── subtasks/             # Subtask API endpoints
-├── lib/                          # Utilities and API
-│   ├── api.ts                    # API client for Next.js routes
-│   └── data.ts                   # In-memory data store
-├── types/                        # TypeScript types
-│   └── task.ts                   # Task and related interfaces
-├── utils/                        # Utility functions
-│   ├── validation.ts             # Form validation
-│   └── dateUtils.ts              # Date formatting utilities
-├── styles/                       # Global styles
-│   └── globals.css               # Global CSS and theme variables
-├── db.json                       # Initial data (for reference)
-└── package.json                  # Dependencies and scripts
-```
-
 ## Prerequisites
 
 - Node.js 18+ and npm (or yarn/pnpm)
@@ -257,7 +211,5 @@ Potential features for future versions:
 
 This project is open source and available for educational purposes.
 
-## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
 
